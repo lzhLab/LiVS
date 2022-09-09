@@ -36,7 +36,7 @@ how to start it?
 * `suf`: choices=['.dcm', '.JL', '.png'].
   <br>Image types.
 * `eval`:action
-  <br>Eval only need weight.
+  <br>Evaluation.
 * `dataset_path`: str
   <br>The relative path of training and validation data.
 * `batch_size`: int
