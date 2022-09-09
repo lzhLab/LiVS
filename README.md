@@ -5,7 +5,7 @@ Liver vessels generated from computed tomography are usually pretty small, which
 
 Here we present LiVS, a fine-grained hepatic vascular dataset constructed by Dr. Zhao’s lab. It has 532 volumes and 15,984 CT slices with vessel masks. The vessels of each slice are delineated by three senior medical imaging experts and the final mask is their majority voting. Due to the pretty small size of vessels, the delineation of each vessel can be oscillating a lot easily. To handle this problem, the coincidence of each vessel among the three masks is calculated. In case the majority voting over any mask is smaller than 0.5, the vessel is highlighted and sent back to the three experts for further refinement. This procedure repeats until no inconsistence exists.
 
-The description of each volume is available here, and the whole data has been uploaded to IEEE DataPort here.
+The description of each volume is available [here](https://201610006.github.io/LiVS_site/), and the whole data has been uploaded to IEEE DataPort with DOI: [10.21227/rwys-mk84](https://ieee-dataport.org/documents/liver-vessel)..
 
 # Usage
 how to start it?
