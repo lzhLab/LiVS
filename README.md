@@ -20,19 +20,17 @@ how to start it?
 ### Parameters
 
 * `num_workers`: int
-   <br>Number of workers. Used to set the number of threads to load data.
+   <br>Number of workers, used to set the number of threads to load data.
 * `ckpt`: str
-  <br>Weight path. Used to set the dir path to save model weight. 
+  <br>Weight path, used to set the path to save the model. 
 * `w`: str
-  <br>The path of model wight to test or reload.
+  <br>The path of model to be tested or reloaded.
 * `name`: int
   <br>Weights file name .
 * `input_size`: int.
   <br>The size of input images.
 * `channels`: int, default 3.
   <br>Number of image's channels.
-* `ckpt`: int.
-  <br>The dir path to save model weight.
 * `dropout`: float between `[0, 1]`, default 0.
   <br>Dropout rate.
 * `suf`: choices=['.dcm', '.JL', '.png'].
@@ -40,13 +38,13 @@ how to start it?
 * `eval`:action
   <br>Eval only need weight.
 * `dataset_path`: str
-  <br>Used to set the relative path of training and validation set.
+  <br>The relative path of training and validation data.
 * `batch_size`: int
   <br>Batch size.
 * `max_epoch`: int 
-  <br>The maximum number of epoch for the current training.
+  <br>The maximum number of epoch.
 * `lr`: float
-  <br>learning rate. Used to set the initial learning rate of the model.
+  <br>learning rate. 
 ```  
 3. Example:  
 	$python train_j2_fpn.py --dataset_path='dataset' batch_size='10' --max_epoch=100 --lr=1e-3
