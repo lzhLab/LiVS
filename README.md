@@ -1,11 +1,11 @@
-# LiVS
-
-This study present an elaborated large-volume and high-quality dataset containing liver raw images, liver masks and liver vessel masks; in addition, Laplacian salience-gated feature pyramid
-network for accurate liver vessel segmentation.
+# Outline
+Liver vessels generated from computed tomography are usually pretty small, which poses big challenges to satisfactory vessel segmentation, including 1) scarcity of high-quality and large-volume vessel masks, 2) difficult to capture vessel-specific features and 3) heavily imbalanced distribution of vessels and liver tissues. To advance, a sophisticated model and an elaborated dataset have been built. The model has a newly conceived Laplacian salience filter highlighting vessel-like regions and suppressing other liver regions to shape vessel-specific feature learning as well as balance of vessels versus others. It is further coupled with a pyramid deep learning architecture to capture various level features, hence the enhancement of the feature formulation. Experiments show that this model markedly outperforms existing approaches, achieving an increment of dice score by 2.4% to 22.1% compared to the state-of-the-arts. More promisingly, the averaged dice score produced by existing models on the newly constructed dataset is as high as 0.723 ± 0.075, which is at least 12.8% higher than that obtained from the existing best dataset under the same settings. These observations suggest that the proposed Laplacian salience as well as the elaborated dataset can be of great help to liver vessel segmentation.
 
 # Dataset
 
-Here we present LiVS, a fine-grained hepatic vascular dataset constructed by Dr. Zhao’s team. This has 532 volumes and 15,984 CT slices having vessel masks. The vessels of each slice are delineated by three senior medical imaging experts and the final mask is their majority voting. Due to the pretty small size of vessels, the delineation of each vessel can be oscillating a lot easily. To handle this problem, the coincidence of each vessel among the three masks is calculated. In case the majority voting over any mask is smaller than 0.5, the vessel is highlighted and sent back to the three experts for further refinement. This procedure repeats until no inconsistence exists.
+Here we present LiVS, a fine-grained hepatic vascular dataset constructed by Dr. Zhao’s lab. It has 532 volumes and 15,984 CT slices with vessel masks. The vessels of each slice are delineated by three senior medical imaging experts and the final mask is their majority voting. Due to the pretty small size of vessels, the delineation of each vessel can be oscillating a lot easily. To handle this problem, the coincidence of each vessel among the three masks is calculated. In case the majority voting over any mask is smaller than 0.5, the vessel is highlighted and sent back to the three experts for further refinement. This procedure repeats until no inconsistence exists.
+
+The description of each volume is available here, and the whole data has been uploaded to IEEE DataPort here.
 
 # Usage
 how to start it?
