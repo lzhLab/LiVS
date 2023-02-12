@@ -44,7 +44,6 @@ class FPN_LSF(nn.Module):
         self.in_planes = 64
         self.num_classes = num_classes
 
-
         self.back_bone = build_backbone(back_bone)
 
         # Top layer
