@@ -1,6 +1,4 @@
-'''FPN in PyTorch.
-See the paper "Feature Pyramid Networks for Object Detection" for more details.
-'''
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -39,24 +37,15 @@ class Bottleneck(nn.Module):
         return out
 
 
-class FPN(nn.Module):
+class FPN_LSF(nn.Module):
 
     def __init__(self, num_blocks, num_classes, back_bone='resnet101', pretrained=True):
-        super(FPN, self).__init__()
+        super(FPN_LSF, self).__init__()
         self.in_planes = 64
         self.num_classes = num_classes
 
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
-        self.bn1 = nn.BatchNorm2d(64)
 
-        BatchNorm = nn.BatchNorm2d
         self.back_bone = build_backbone(back_bone)
-
-        # Bottom-up layers
-        self.layer1 = self._make_layer(Bottleneck,  64, num_blocks[0], stride=1)
-        self.layer2 = self._make_layer(Bottleneck, 128, num_blocks[1], stride=2)
-        self.layer3 = self._make_layer(Bottleneck, 256, num_blocks[2], stride=2)
-        self.layer4 = self._make_layer(Bottleneck, 512, num_blocks[3], stride=2)
 
         # Top layer
         self.toplayer = nn.Conv2d(2048, 256, kernel_size=1, stride=1, padding=0)  # Reduce channels
@@ -73,8 +62,14 @@ class FPN(nn.Module):
 
 		# Semantic branch
         self.semantic_branch = nn.Conv2d(256, 128, kernel_size=3, stride=1, padding=1)
+
         self.conv2 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1)
-        self.conv3 = nn.Conv2d(128, self.num_classes, kernel_size=1, stride=1, padding=0)
+        self.conv3 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1)
+        self.conv4 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1)
+        self.conv5 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1)
+
+        self.conv_st = nn.Conv2d(128, self.num_classes, kernel_size=1, stride=1, padding=0)
+
         # num_groups, num_channels
         self.gn1 = nn.GroupNorm(128, 128) 
         self.gn2 = nn.GroupNorm(256, 256)
@@ -144,34 +139,27 @@ class FPN(nn.Module):
         p3 = self.smooth2(p3)
         p2 = self.smooth3(p2)
 
-        # Semantic
         _, _, h, w = p2.size()
         # 256->256
+        p5 = p5 * self._down_scales(g,8)
         s5_0 = F.relu(self.gn2(self.conv2(p5)))
-        #s5_0 = s5_0 * self._down_scales(g,8)
         s5 = self._upsample(s5_0, h, w)
-        # 256->256
-        s5 = self._upsample(F.relu(self.gn2(self.conv2(s5))), h, w)
-        # 256->128
         s5 = self._upsample(F.relu(self.gn1(self.semantic_branch(s5))), h, w)
 
         # 256->256
-        s4_0 = F.relu(self.gn2(self.conv2(p4)))
-        #s4_0 = s4_0 * self._down_scales(g, 4)
+        p4 = p4 * self._down_scales(g, 4)
+        s4_0 = F.relu(self.gn2(self.conv3(p4)))
         s4 = self._upsample(s4_0, h, w)
-        # 256->128
         s4 = self._upsample(F.relu(self.gn1(self.semantic_branch(s4))), h, w)
 
         # 256->128
-        s3_0 = F.relu(self.gn2(self.conv2(p3)))
-        #s3_0 = s3_0 * self._down_scales(g, 2)
+        p3 = p3 * self._down_scales(g, 2)
+        s3_0 = F.relu(self.gn2(self.conv4(p3)))
         s3 = self._upsample(F.relu(self.gn1(self.semantic_branch(s3_0))), h, w)
 
-        s2_0 = F.relu(self.gn2(self.conv2(p2)))
-        #s2_0 = s2_0 * g
+        p2 = p2 * g
+        s2_0 = F.relu(self.gn2(self.conv5(p2)))
         s2 = F.relu(self.gn1(self.semantic_branch(s2_0)))
 
 
-        return self.conv3(s2 + s3 + s4 + s5)
-        # return self._upsample(self.conv3(s2 + s3 + s4 + s5), 4 * h, 4 * w)
-    
+        return self.conv_st(s2 + s3 + s4 + s5)
