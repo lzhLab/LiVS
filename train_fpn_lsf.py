@@ -6,7 +6,7 @@ from tqdm import tqdm
 from torch import optim, nn
 #from dataset_gabor import MyDataset
 from utils.dataset_loader_highpass import MyDataset
-from models.FPN_ours import FPN
+from models.FPN_LSF import FPN_LSF
 from torchvision import transforms
 from einops import rearrange
 import torch.nn.functional as F
@@ -158,7 +158,7 @@ def val_epoch(model, dl, criterion):
 
 
 def train(opt):
-    model = FPN([3,4,23,3], 1, back_bone="resnet50")
+    model = FPN_LSF([3,4,23,3], 1, back_bone="resnet50")
 
     model = model.to(device)
     model = nn.DataParallel(model)
