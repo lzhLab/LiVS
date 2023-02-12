@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from torch import optim, nn
-from models.FPN_ours import FPN
+from models.FPN_LSF import FPN_LSF
 from utils.dataset_loader_highpass import MyDataset
 from torchvision import transforms
 from einops import rearrange
@@ -51,7 +51,7 @@ def test_epoch(model, dl):
 
 
 def test():
-    model = FPN([3,4,23,3], 1, back_bone="resnet50")
+    model = FPN_LSF([3,4,23,3], 1, back_bone="resnet50")
     pth = 'ckpt/20220615091958_setr/ours_ynbce.pth'
     model = load_checkpoint_model(model, pth, device)
     model = model.to(device)
