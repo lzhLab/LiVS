@@ -52,6 +52,6 @@ how to start it?
 # Citation
 If the model or LiVS is useful for your research, please cite:
 ```
-Gao Z., Zong Q., Yan Y., Wang Y., Zhu N., Zhang J., Wang Y., and Zhao L. Laplacian salience-gated feature pyramid network for accurate liver vessel segmentation, 2022.
+Gao Z., Zong Q., Wang Y., Yan Y., Wang Y., Zhu N., Zhang J., Wang Y., and Zhao L. Laplacian salience-gated feature pyramid network for accurate liver vessel segmentation, IEEE Transactions on Medical Imaging, 2023, DOI:10.1109/TMI.2023.3273528.
 ```
 
