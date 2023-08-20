@@ -162,3 +162,4 @@ class FPN_LSF(nn.Module):
 
 
         return self.conv_st(s2 + s3 + s4 + s5)
+
