@@ -10,9 +10,9 @@ from models.FPN_LSF import FPN_LSF
 from torchvision import transforms
 from einops import rearrange
 import torch.nn.functional as F
+import pdb
 
-
-os.environ["CUDA_VISIBLE_DEVICES"] = "2,3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 torch.manual_seed(41)
 
@@ -105,7 +105,7 @@ def gabor_bce_with_logits(input, target, weight=None, epoch=1):
     return loss.mean()
 
 
-def train_epoch(epoch, model, dl, optimizer, criterion, criterion2):
+def train_epoch(epoch, model, dl, optimizer, criterion):
     model.train()
     bar = tqdm(dl)
     bar.set_description_str("%02d" % epoch)
@@ -117,10 +117,10 @@ def train_epoch(epoch, model, dl, optimizer, criterion, criterion2):
         gb = gb.float().to(device)
         hp = hp.float().to(device)
         mask = mask.float().to(device)
-        outputs = model(x2,gb)
+        outputs = model(x2,hp+gb)
         loss1 = criterion(outputs, mask)
-        loss2 = criterion2(outputs, mask, gb)
-        loss = criterion(outputs, mask) + 
+        loss2 = gabor_loss(outputs, mask, gb)
+        loss = loss1 + loss2
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -143,7 +143,7 @@ def val_epoch(model, dl, criterion):
         gb = gb.float().to(device)
         hp = hp.float().to(device)
         mask = mask.float().to(device)
-        outputs = model(x2,gb)
+        outputs = model(x2,hp+gb)
 
         loss_v += criterion(outputs, mask).item()
         dice_v += dice_metric(outputs, mask)
@@ -163,7 +163,7 @@ def train(opt):
     model = model.to(device)
     model = nn.DataParallel(model)
     
-    root_dir = '../dataset/LiVS'
+    root_dir = 'dataset/LiVS'
     train_image_root = 'train'
     val_image_root = 'val'
 
@@ -174,7 +174,7 @@ def train(opt):
 
     optimizer = optim.Adam(params=model.parameters(), lr=1e-3)
     criterion = nn.BCEWithLogitsLoss()
-    criterion2 = gabor_loss()
+
     # logs
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, min_lr=1e-6,patience=6)
     best_dice_epoch, best_dice, b_voe, b_rvd, train_loss, train_dice, b_acc, b_sen, b_spe,pre_loss, sur_loss =  0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0
@@ -187,7 +187,7 @@ def train(opt):
     print(len(train_dataset), len(val_dataset), save_dir)
     for epoch in range(opt.max_epoch):
         if not opt.eval:
-            train_loss, train_dice, pre_loss,sur_loss = train_epoch(epoch, model, train_dl, optimizer, criterion, criterion2)
+            train_loss, train_dice, pre_loss,sur_loss = train_epoch(epoch, model, train_dl, optimizer, criterion)
         val_loss, val_dice, voe_v, rvd_v, acc_v, sen_v, spe_v = val_epoch(model, val_dl, criterion)
         if best_dice < val_dice:
             best_dice, best_dice_epoch, b_voe, b_rvd,b_acc, b_sen, b_spe = val_dice, epoch, voe_v, rvd_v, acc_v, sen_v, spe_v
@@ -209,9 +209,9 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--name', type=str, default='setr', help='study name')
-    parser.add_argument('--batch_size', type=int, default=6, help='batch size')
+    parser.add_argument('--batch_size', type=int, default=16, help='batch size')
     parser.add_argument('--input_size', type=int, default=512, help='input size')
-    parser.add_argument('--max_epoch', type=int, default=1024)
+    parser.add_argument('--max_epoch', type=int, default=300)
     parser.add_argument('--lr', type=float, default=1e-3, help='learning rate')
     parser.add_argument('--ckpt', type=str, default='ckpt', help='the dir path to save model weight')
     parser.add_argument('--w', type=str, help='the path of model wight to test or reload')
