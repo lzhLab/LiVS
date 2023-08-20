@@ -163,7 +163,7 @@ def train(opt):
     model = model.to(device)
     model = nn.DataParallel(model)
     
-    root_dir = 'dataset/LiVS'
+    root_dir = opt.dataset_path
     train_image_root = 'train'
     val_image_root = 'val'
 
@@ -218,6 +218,7 @@ if __name__ == '__main__':
     parser.add_argument('--suf', type=str, choices=['.dcm', '.JL', '.png'], help='suffix', default='.png')
     parser.add_argument('--eval', action="store_true", help='eval only need weight')
     parser.add_argument('--test_root', type=str, help='root_dir')
+    parser.add_argument('--dataset_path', type=str, help='dataset_dir')
 
     opt = parser.parse_args()
     train(opt)
