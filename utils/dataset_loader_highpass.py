@@ -13,7 +13,10 @@ import numpy as np
 import os
 import glob
 import cv2
-from square_wave import creat_gabor 
+from .square_wave import creat_gabor
+from PIL import Image
+import random
+import scipy.signal
 
 def LoaderNames(names_path):
     f = open(names_path, 'r')
@@ -23,7 +26,7 @@ def LoaderNames(names_path):
 
 
 def convolve(image):
-    height,width = image.shape
+
     #Laplace Operator
     filter = np.array([[0.0, 0.0, 1.0, 0.0, 0.0],
                           [0.0, 1.0, 2.0, 1.0, 0.0],
@@ -31,36 +34,41 @@ def convolve(image):
                           [0.0, 1.0, 2.0, 1.0, 0.0],
                           [0.0, 0.0, 1.0, 0.0, 0.0],
                           ])
-    h,w = filter.shape
-    new_h = height-h+1
-    new_w = width-h+1
-    new_img = np.zeros((new_h,new_w),dtype=np.float)
-    for i in range(new_h):
-        for j in range(new_w):
-            new_img[i,j]=np.sum(image[i:i+h,j:j+w]*filter)
+    new_img = scipy.signal.convolve2d(image, filter, mode='same')
     new_img = new_img.clip(0,255)
     return new_img
 
-
 def default_loader(path, model_type):
+    ima_size = 512
     image = cv2.imdecode(np.fromfile(path,dtype=np.uint8),-1)#cv2.imread(path)
-    x,y = active_block(image)
-    image = image[x:x+256,y:y+256]/(np.max(image)+1)
-    gabor = creat_gabor(path.replace(str(model_type),'gabor_train'))
-    # gaussianblur
-    gabor_gs = cv2.GaussianBlur(gabor, (9, 9), 0)
-    # filter
-    hp = convolve(gabor_gs) 
-    hp = hp[x:x + 256, y:y + 256]
-    hp = hp/(np.max(hp)+1)
-    hp.resize(256,256)
-    
-    gabor = gabor[x:x + 256, y:y + 256]
-    gabor_w = gabor/(np.max(gabor)+1)
-    label = cv2.imdecode(np.fromfile(path.replace(str(model_type),'trainmask'), dtype=np.uint8), -1)
-    label = label[x:x + 256, y:y + 256] / 255.
 
-    return image,gabor_w,hp,label
+    height, width = image.shape
+
+    padded_img = np.zeros((ima_size, ima_size), dtype=np.uint8)
+    padded_lab = np.zeros((ima_size, ima_size), dtype=np.uint8)
+    # scale = 512.0 / max(height, width)
+    # image = cv2.resize(image, None, fx=scale, fy=scale)
+
+    y_start = (ima_size - height) // 2
+    x_start = (ima_size - width) // 2
+    padded_img[y_start:y_start + height, x_start:x_start + width] = image
+
+    gabor = creat_gabor(padded_img)
+    gabor_gs = cv2.GaussianBlur(gabor, (9, 9), 0)
+    hp = convolve(gabor_gs)
+
+    # st = str(random.randint(0, 9))
+    # Image.fromarray(gabor).convert('L').save(os.path.join("dataset", st+"_gb.png"))
+    # Image.fromarray(hp).convert('L').save(os.path.join("dataset", st + "_hp.png"))
+
+    gabor_w = gabor / (np.max(gabor) + 1)
+    hp = hp / (np.max(hp) + 1)
+    padded_img = padded_img/(np.max(image)+1)
+
+    label = cv2.imdecode(np.fromfile(path.replace(str(model_type),'trainmask'), dtype=np.uint8), -1)
+    padded_lab[y_start:y_start + height, x_start:x_start + width] = label
+
+    return padded_img,gabor_w,hp,padded_lab
 
 #cut to 256*256
 def active_block(img):
