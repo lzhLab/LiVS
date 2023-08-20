@@ -6,13 +6,11 @@ import os
 import math
 
 def bi_demo(image):
-    #预处理操作，双边滤波及中值滤波
-    dst = cv2.bilateralFilter(src=image, d=0, sigmaColor=100, sigmaSpace=15)  # 高斯双边滤波
-    img_medianBlur = cv2.medianBlur(dst, 3)  # 中值滤波
+    dst = cv2.bilateralFilter(src=image, d=0, sigmaColor=100, sigmaSpace=15) 
+    img_medianBlur = cv2.medianBlur(dst, 3) 
     return img_medianBlur
 
 def gabor(sigma, theta, Lambda, gamma, ksize, cos_or_sin):
-    #Garbor滤波器编写
     """cos_or_sin=1 return cos square_wave."""
     """cos_or_sin=0 return sin square_wave."""
     sigma_x = sigma
@@ -44,7 +42,7 @@ def gabor(sigma, theta, Lambda, gamma, ksize, cos_or_sin):
 
 
 def gabor_iteration(image, count):
-    #迭代过程
+
     sigm = 3
     lambd = 2*sigm
     gamm = 1
@@ -63,13 +61,6 @@ def gabor_iteration(image, count):
 
             count1 = np.sum(new_gabor_kernel)
             gabor_kernel = gabor_kernel / count1
-
-            # plt.subplot(3,6,i+1)
-            # plt.xticks([])
-            # plt.yticks([])
-            # plt.title('θ='+str(t),y=-0.2)
-            # plt.imshow(gabor_kernel)#,cmap=plt.cm.gray)
-
 
             result = cv2.filter2D(image, -1, gabor_kernel)
             out += result
@@ -99,9 +90,8 @@ def gabor_iteration(image, count):
     return gabor_image
 
 
-def creat_gabor(imagepath):
-    image = cv2.imdecode(np.fromfile(itm, dtype=np.uint8), -1)
-    image = image - np.sum(image) / (np.sum(image > 0))
+def creat_gabor(image):
+    image = image - np.sum(image) / (np.sum(image > 0)+1)
     gabor_result = gabor_iteration(image, 1)
-    gabor_result = np.clip(gabor_result, 0, 255)
+    gabor_result = np.clip(gabor_result, 1, 255)
     return gabor_result
